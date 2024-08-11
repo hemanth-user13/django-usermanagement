@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import AbstractBaseUser
-from .models import CustomUser
-from .serializers import UserSerializer, LoginSerializer
+from .models import CustomUser, Restaurant, FoodItem
+from .serializers import UserSerializer, LoginSerializer, RestaurantSerializer, FoodItemSerializer
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -77,3 +77,31 @@ class SuperAdminLoginView(generics.GenericAPIView):
             return Response({'error': 'Validation error', 'details': e.detail}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class RestaurantListView(generics.ListCreateAPIView):
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except serializers.ValidationError as e:
+            return Response({'error': 'Validation error', 'details': e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class RestaurantDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSerializer
+
+class FoodItemListView(generics.ListCreateAPIView):
+    queryset = FoodItem.objects.all()
+    serializer_class = FoodItemSerializer
+
+class FoodItemDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = FoodItem.objects.all()
+    serializer_class = FoodItemSerializer
