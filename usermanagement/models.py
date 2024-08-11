@@ -13,6 +13,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, username, email, password=None):
         user = self.create_user(username, email, password)
         user.is_admin = True
+        user.is_superuser = True  # Set is_superuser to True
         user.save(using=self._db)
         return user
 
@@ -21,6 +22,7 @@ class CustomUser(AbstractBaseUser):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)  # Add is_superuser field
 
     objects = CustomUserManager()
 
@@ -33,3 +35,9 @@ class CustomUser(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
